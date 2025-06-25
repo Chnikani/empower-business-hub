@@ -5,6 +5,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { BusinessProvider } from "@/contexts/BusinessContext";
+import { AuthGuard } from "@/components/AuthGuard";
 import AppLayout from "./components/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import Accounting from "./pages/Accounting";
@@ -22,31 +25,37 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <SidebarProvider>
-        <BrowserRouter>
-          <div className="min-h-screen flex w-full">
-            <Routes>
-              <Route path="/" element={<AppLayout />}>
-                <Route index element={<Dashboard />} />
-                <Route path="accounting" element={<Accounting />} />
-                <Route path="knowledge" element={<KnowledgeBase />} />
-                <Route path="crm" element={<CRM />} />
-                <Route path="creative" element={<CreativeStudio />} />
-                <Route path="website" element={<WebsiteBuilder />} />
-                <Route path="signatures" element={<ESignatures />} />
-                <Route path="retail" element={<Retail />} />
-                <Route path="chat" element={<TeamChat />} />
-                <Route path="marketing" element={<Marketing />} />
-              </Route>
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </div>
-        </BrowserRouter>
-      </SidebarProvider>
-    </TooltipProvider>
+    <AuthProvider>
+      <BusinessProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <AuthGuard>
+            <SidebarProvider>
+              <BrowserRouter>
+                <div className="min-h-screen flex w-full">
+                  <Routes>
+                    <Route path="/" element={<AppLayout />}>
+                      <Route index element={<Dashboard />} />
+                      <Route path="accounting" element={<Accounting />} />
+                      <Route path="knowledge" element={<KnowledgeBase />} />
+                      <Route path="crm" element={<CRM />} />
+                      <Route path="creative" element={<CreativeStudio />} />
+                      <Route path="website" element={<WebsiteBuilder />} />
+                      <Route path="signatures" element={<ESignatures />} />
+                      <Route path="retail" element={<Retail />} />
+                      <Route path="chat" element={<TeamChat />} />
+                      <Route path="marketing" element={<Marketing />} />
+                    </Route>
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </div>
+              </BrowserRouter>
+            </SidebarProvider>
+          </AuthGuard>
+        </TooltipProvider>
+      </BusinessProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

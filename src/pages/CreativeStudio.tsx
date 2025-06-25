@@ -1,51 +1,46 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Palette, Image, Download, Plus, Sparkles, Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-interface GeneratedImage {
-  id: string;
-  prompt: string;
-  style: string;
-  createdAt: string;
-  url: string;
-}
+import { useBusiness } from "@/contexts/BusinessContext";
+import { generateImage, getBusinessImages, downloadImage, GeneratedImage } from "@/services/imageService";
 
 const CreativeStudio = () => {
   const [prompt, setPrompt] = useState('');
   const [style, setStyle] = useState('realistic');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [images, setImages] = useState<GeneratedImage[]>([
-    {
-      id: '1',
-      prompt: 'Modern office workspace with plants and natural lighting',
-      style: 'realistic',
-      createdAt: '2024-01-15',
-      url: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&h=600&fit=crop'
-    },
-    {
-      id: '2',
-      prompt: 'Abstract geometric pattern in vibrant blue and orange',
-      style: 'abstract',
-      createdAt: '2024-01-14',
-      url: 'https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=600&h=600&fit=crop'
-    },
-    {
-      id: '3',
-      prompt: 'Professional team meeting illustration with diverse characters',
-      style: 'illustration',
-      createdAt: '2024-01-13',
-      url: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=600&fit=crop'
-    }
-  ]);
+  const [images, setImages] = useState<GeneratedImage[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   const { toast } = useToast();
+  const { currentBusiness } = useBusiness();
+
+  const loadImages = async () => {
+    if (!currentBusiness) return;
+    
+    try {
+      const businessImages = await getBusinessImages(currentBusiness.id);
+      setImages(businessImages);
+    } catch (error) {
+      console.error('Error loading images:', error);
+      toast({
+        title: "Error Loading Images",
+        description: "Failed to load your generated images",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadImages();
+  }, [currentBusiness]);
 
   const handleGenerateImage = async () => {
     if (!prompt.trim()) {
@@ -57,35 +52,68 @@ const CreativeStudio = () => {
       return;
     }
 
+    if (!currentBusiness) {
+      toast({
+        title: "No Business Selected",
+        description: "Please select a business account first",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsGenerating(true);
     
-    // Simulate image generation (in real app, this would call an AI service)
-    setTimeout(() => {
-      const newImage: GeneratedImage = {
-        id: Date.now().toString(),
-        prompt,
-        style,
-        createdAt: new Date().toISOString().split('T')[0],
-        url: `https://images.unsplash.com/photo-${Math.floor(Math.random() * 1000000000000)}?w=600&h=600&fit=crop`
-      };
-      
+    try {
+      const newImage = await generateImage(prompt, style, currentBusiness.id);
       setImages([newImage, ...images]);
       setPrompt('');
-      setIsGenerating(false);
       
       toast({
         title: "Image Generated! ✨",
         description: "Your AI-generated image is ready to download",
       });
-    }, 3000);
+    } catch (error) {
+      console.error('Image generation failed:', error);
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
-  const handleDownload = (image: GeneratedImage) => {
-    toast({
-      title: "Download Started",
-      description: "Your image is being downloaded",
-    });
+  const handleDownload = async (image: GeneratedImage) => {
+    try {
+      const filename = `${image.prompt.slice(0, 30).replace(/[^a-zA-Z0-9]/g, '_')}_${image.style}.png`;
+      await downloadImage(image.image_url, filename);
+      
+      toast({
+        title: "Download Started",
+        description: "Your image is being downloaded",
+      });
+    } catch (error) {
+      toast({
+        title: "Download Failed",
+        description: "Failed to download image. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
+
+  if (!currentBusiness) {
+    return (
+      <div className="space-y-8">
+        <Card className="modern-card">
+          <CardContent className="p-8 text-center">
+            <h3 className="text-lg font-semibold mb-2">No Business Selected</h3>
+            <p className="text-muted-foreground">Please select or create a business account to use the Creative Studio.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -206,7 +234,12 @@ const CreativeStudio = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {images.length === 0 ? (
+          {isLoading ? (
+            <div className="text-center py-16">
+              <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
+              <p className="text-muted-foreground">Loading your images...</p>
+            </div>
+          ) : images.length === 0 ? (
             <div className="text-center py-16">
               <div className="h-20 w-20 bg-gradient-to-br from-muted to-muted/50 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Image className="h-10 w-10 text-muted-foreground" />
@@ -224,9 +257,13 @@ const CreativeStudio = () => {
                 <div key={image.id} className="group relative hover-lift">
                   <div className="aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-muted to-muted/50 shadow-lg">
                     <img
-                      src={image.url}
+                      src={image.image_url}
                       alt={image.prompt}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = `https://images.unsplash.com/photo-${Math.floor(Math.random() * 1000000000000)}?w=600&h=600&fit=crop`;
+                      }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                   </div>
@@ -240,7 +277,9 @@ const CreativeStudio = () => {
                         <Badge variant="outline" className="capitalize">
                           {image.style}
                         </Badge>
-                        <span className="text-muted-foreground">{image.createdAt}</span>
+                        <span className="text-muted-foreground">
+                          {new Date(image.created_at).toLocaleDateString()}
+                        </span>
                       </div>
                     </div>
                     
