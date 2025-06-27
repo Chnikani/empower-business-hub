@@ -23,13 +23,13 @@ serve(async (req) => {
       throw new Error('Missing required fields: prompt, style, and business_id are required');
     }
 
-    // Get environment variables with correct names
-    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
+    // Get environment variables
+    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-    if (!geminiApiKey) {
-      throw new Error('Gemini API key not configured');
+    if (!openaiApiKey) {
+      throw new Error('OpenAI API key not configured');
     }
 
     if (!supabaseUrl || !supabaseServiceKey) {
@@ -49,51 +49,42 @@ serve(async (req) => {
       modern: 'modern design, contemporary, sleek'
     };
 
-    const enhancedPrompt = `Generate an image: ${prompt}, ${stylePrompts[style] || 'high quality'}`;
+    const enhancedPrompt = `${prompt}, ${stylePrompts[style] || 'high quality'}`;
     console.log('Enhanced prompt:', enhancedPrompt);
 
-    // Generate image using Gemini API
-    const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${geminiApiKey}`;
-    
-    const imageResponse = await fetch(geminiApiUrl, {
+    // Generate image using OpenAI
+    const imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${openaiApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: enhancedPrompt
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 8192,
-        }
+        model: 'dall-e-3',
+        prompt: enhancedPrompt,
+        n: 1,
+        size: '1024x1024',
+        quality: 'standard'
       }),
     });
 
     if (!imageResponse.ok) {
       const errorData = await imageResponse.text();
-      console.error('Gemini API error:', errorData);
-      throw new Error(`Gemini API error: ${imageResponse.status} ${imageResponse.statusText}`);
+      console.error('OpenAI API error:', errorData);
+      throw new Error(`OpenAI API error: ${imageResponse.status} ${imageResponse.statusText}`);
     }
 
     const imageData = await imageResponse.json();
-    console.log('Gemini API response received');
+    console.log('OpenAI response received');
 
-    if (!imageData.candidates || !imageData.candidates[0] || !imageData.candidates[0].content) {
-      throw new Error('Invalid response from Gemini API - no content generated');
+    if (!imageData.data || !imageData.data[0] || !imageData.data[0].url) {
+      throw new Error('Invalid response from OpenAI API');
     }
 
-    // For now, we'll create a placeholder image URL since Gemini Pro Vision doesn't directly generate images
-    // In a real implementation, you'd need to use a different Gemini model or service for image generation
-    const placeholderImageUrl = `https://picsum.photos/1024/1024?random=${Date.now()}`;
-    
-    // Download the placeholder image
-    const downloadResponse = await fetch(placeholderImageUrl);
+    const imageUrl = imageData.data[0].url;
+
+    // Download the image
+    const downloadResponse = await fetch(imageUrl);
     if (!downloadResponse.ok) {
       throw new Error('Failed to download generated image');
     }
