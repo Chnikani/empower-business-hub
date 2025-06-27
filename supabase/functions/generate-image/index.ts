@@ -52,7 +52,7 @@ serve(async (req) => {
     const enhancedPrompt = `${prompt}, ${stylePrompts[style] || 'high quality'}`;
     console.log('Enhanced prompt:', enhancedPrompt);
 
-    // Generate image using OpenAI
+    // Generate image using OpenAI DALL-E API
     const imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
