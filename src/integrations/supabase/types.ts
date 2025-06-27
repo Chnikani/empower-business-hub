@@ -9,7 +9,68 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      business_accounts: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      generated_images: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          image_url: string
+          prompt: string
+          storage_path: string
+          style: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          image_url: string
+          prompt: string
+          storage_path: string
+          style: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          image_url?: string
+          prompt?: string
+          storage_path?: string
+          style?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "generated_images_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

@@ -18,6 +18,7 @@ interface BusinessContextType {
   createBusiness: (name: string) => Promise<void>
   refreshBusinesses: () => Promise<void>
   loading: boolean
+  error: string | null
 }
 
 const BusinessContext = createContext<BusinessContextType | undefined>(undefined)
@@ -35,55 +36,87 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [currentBusiness, setCurrentBusiness] = useState<BusinessAccount | null>(null)
   const [businesses, setBusinesses] = useState<BusinessAccount[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const refreshBusinesses = async () => {
     if (!user) {
+      console.log('No user, clearing business data')
       setBusinesses([])
       setCurrentBusiness(null)
+      setError(null)
       setLoading(false)
       return
     }
 
-    const { data, error } = await supabase
-      .from('business_accounts')
-      .select('*')
-      .eq('owner_id', user.id)
-      .order('created_at', { ascending: false })
+    try {
+      console.log('Fetching businesses for user:', user.id)
+      setError(null)
+      
+      const { data, error: fetchError } = await supabase
+        .from('business_accounts')
+        .select('*')
+        .eq('owner_id', user.id)
+        .order('created_at', { ascending: false })
 
-    if (error) {
-      console.error('Error fetching businesses:', error)
+      if (fetchError) {
+        console.error('Error fetching businesses:', fetchError)
+        setError(`Failed to fetch businesses: ${fetchError.message}`)
+        setLoading(false)
+        return
+      }
+
+      console.log('Fetched businesses:', data)
+      setBusinesses(data || [])
+      
+      // Set current business to first one if none selected
+      if (data && data.length > 0 && !currentBusiness) {
+        console.log('Setting current business to:', data[0])
+        setCurrentBusiness(data[0])
+      } else if (!data || data.length === 0) {
+        console.log('No businesses found, clearing current business')
+        setCurrentBusiness(null)
+      }
+      
+    } catch (err) {
+      console.error('Unexpected error in refreshBusinesses:', err)
+      setError('An unexpected error occurred while fetching businesses')
+    } finally {
       setLoading(false)
-      return
     }
-
-    setBusinesses(data || [])
-    
-    // Set current business to first one if none selected
-    if (data && data.length > 0 && !currentBusiness) {
-      setCurrentBusiness(data[0])
-    }
-    
-    setLoading(false)
   }
 
   const createBusiness = async (name: string) => {
     if (!user) throw new Error('User not authenticated')
 
-    const { data, error } = await supabase
-      .from('business_accounts')
-      .insert([{ name, owner_id: user.id }])
-      .select()
-      .single()
+    try {
+      console.log('Creating business:', name)
+      setError(null)
 
-    if (error) throw error
+      const { data, error: createError } = await supabase
+        .from('business_accounts')
+        .insert([{ name, owner_id: user.id }])
+        .select()
+        .single()
 
-    await refreshBusinesses()
-    if (data) {
-      setCurrentBusiness(data)
+      if (createError) {
+        console.error('Error creating business:', createError)
+        throw new Error(`Failed to create business: ${createError.message}`)
+      }
+
+      console.log('Business created:', data)
+      await refreshBusinesses()
+      
+      if (data) {
+        setCurrentBusiness(data)
+      }
+    } catch (err) {
+      console.error('Error in createBusiness:', err)
+      throw err
     }
   }
 
   useEffect(() => {
+    console.log('User changed, refreshing businesses')
     refreshBusinesses()
   }, [user])
 
@@ -94,6 +127,7 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     createBusiness,
     refreshBusinesses,
     loading,
+    error,
   }
 
   return <BusinessContext.Provider value={value}>{children}</BusinessContext.Provider>

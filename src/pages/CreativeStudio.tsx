@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Palette, Image, Download, Plus, Sparkles, Wand2 } from "lucide-react";
+import { Palette, Image, Download, Plus, Sparkles, Wand2, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useBusiness } from "@/contexts/BusinessContext";
 import { generateImage, getBusinessImages, downloadImage, GeneratedImage } from "@/services/imageService";
@@ -18,19 +18,25 @@ const CreativeStudio = () => {
   const [isLoading, setIsLoading] = useState(true);
   
   const { toast } = useToast();
-  const { currentBusiness } = useBusiness();
+  const { currentBusiness, loading: businessLoading, error: businessError } = useBusiness();
 
   const loadImages = async () => {
-    if (!currentBusiness) return;
+    if (!currentBusiness) {
+      console.log('No current business, skipping image load');
+      setIsLoading(false);
+      return;
+    }
     
     try {
+      console.log('Loading images for business:', currentBusiness.id);
       const businessImages = await getBusinessImages(currentBusiness.id);
       setImages(businessImages);
+      console.log('Loaded images:', businessImages);
     } catch (error) {
       console.error('Error loading images:', error);
       toast({
         title: "Error Loading Images",
-        description: "Failed to load your generated images",
+        description: `Failed to load your generated images: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       });
     } finally {
@@ -39,10 +45,14 @@ const CreativeStudio = () => {
   };
 
   useEffect(() => {
-    loadImages();
-  }, [currentBusiness]);
+    if (!businessLoading) {
+      loadImages();
+    }
+  }, [currentBusiness, businessLoading]);
 
   const handleGenerateImage = async () => {
+    console.log('Generate image clicked', { prompt: prompt.trim(), currentBusiness });
+    
     if (!prompt.trim()) {
       toast({
         title: "Prompt Required",
@@ -62,9 +72,12 @@ const CreativeStudio = () => {
     }
 
     setIsGenerating(true);
+    console.log('Starting image generation...', { prompt, style, businessId: currentBusiness.id });
     
     try {
       const newImage = await generateImage(prompt, style, currentBusiness.id);
+      console.log('Image generated successfully:', newImage);
+      
       setImages([newImage, ...images]);
       setPrompt('');
       
@@ -74,9 +87,11 @@ const CreativeStudio = () => {
       });
     } catch (error) {
       console.error('Image generation failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      
       toast({
         title: "Generation Failed",
-        description: "Failed to generate image. Please try again.",
+        description: `Failed to generate image: ${errorMessage}`,
         variant: "destructive",
       });
     } finally {
@@ -94,6 +109,7 @@ const CreativeStudio = () => {
         description: "Your image is being downloaded",
       });
     } catch (error) {
+      console.error('Download failed:', error);
       toast({
         title: "Download Failed",
         description: "Failed to download image. Please try again.",
@@ -102,6 +118,40 @@ const CreativeStudio = () => {
     }
   };
 
+  // Show loading state while business context is loading
+  if (businessLoading) {
+    return (
+      <div className="space-y-8">
+        <Card className="modern-card">
+          <CardContent className="p-8 text-center">
+            <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Loading...</h3>
+            <p className="text-muted-foreground">Setting up your workspace...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show error state if there's a business context error
+  if (businessError) {
+    return (
+      <div className="space-y-8">
+        <Card className="modern-card border-destructive">
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2 text-destructive">Error Loading Business Data</h3>
+            <p className="text-muted-foreground mb-4">{businessError}</p>
+            <Button variant="outline" onClick={() => window.location.reload()}>
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show no business state
   if (!currentBusiness) {
     return (
       <div className="space-y-8">
@@ -246,10 +296,6 @@ const CreativeStudio = () => {
               </div>
               <h3 className="text-lg font-semibold mb-2">No images yet</h3>
               <p className="text-muted-foreground mb-4">Create your first AI-generated image to get started</p>
-              <Button variant="outline" className="hover-lift">
-                <Plus className="mr-2 h-4 w-4" />
-                Generate Your First Image
-              </Button>
             </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -261,8 +307,9 @@ const CreativeStudio = () => {
                       alt={image.prompt}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                       onError={(e) => {
+                        console.error('Image failed to load:', image.image_url);
                         const target = e.target as HTMLImageElement;
-                        target.src = `https://images.unsplash.com/photo-${Math.floor(Math.random() * 1000000000000)}?w=600&h=600&fit=crop`;
+                        target.src = `https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600&h=600&fit=crop`;
                       }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
