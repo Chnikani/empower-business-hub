@@ -16,67 +16,67 @@ import {
 const menuItems = [
   {
     title: "Dashboard",
-    url: "/",
+    url: "/dashboard",
     icon: BarChart3,
     description: "Business Overview"
   },
   {
     title: "Accounting",
-    url: "/accounting",
+    url: "/dashboard/accounting",
     icon: Database,
     description: "Financial Management"
   },
   {
     title: "Knowledge Base",
-    url: "/knowledge",
+    url: "/dashboard/knowledge",
     icon: FileText,
     description: "Documents & Notes"
   },
   {
     title: "CRM",
-    url: "/crm",
+    url: "/dashboard/crm",
     icon: Users,
     description: "Customer Relations"
   },
   {
     title: "Creative Studio",
-    url: "/creative",
+    url: "/dashboard/creative",
     icon: Palette,
     description: "AI Image Generation"
   },
   {
     title: "Website Builder",
-    url: "/website",
+    url: "/dashboard/website",
     icon: Monitor,
     description: "Build & Deploy Sites"
   },
   {
     title: "E-Signatures",
-    url: "/signatures",
+    url: "/dashboard/signatures",
     icon: FileCheck,
     description: "Document Signing"
   },
   {
     title: "Retail",
-    url: "/retail",
+    url: "/dashboard/retail",
     icon: ShoppingCart,
     description: "Inventory & Sales"
   },
   {
     title: "Team Chat",
-    url: "/chat",
+    url: "/dashboard/chat",
     icon: MessageSquare,
     description: "Team Communication"
   },
   {
     title: "Marketing",
-    url: "/marketing",
+    url: "/dashboard/marketing",
     icon: Megaphone,
     description: "Campaigns & Content"
   },
   {
     title: "Contact",
-    url: "/contact",
+    url: "/dashboard/contact",
     icon: Mail,
     description: "Get in touch with us"
   },
