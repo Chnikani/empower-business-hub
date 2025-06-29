@@ -22,16 +22,13 @@ const CreativeStudio = () => {
 
   const loadImages = async () => {
     if (!currentBusiness) {
-      console.log('No current business, skipping image load');
       setIsLoading(false);
       return;
     }
     
     try {
-      console.log('Loading images for business:', currentBusiness.id);
       const businessImages = await getBusinessImages(currentBusiness.id);
       setImages(businessImages);
-      console.log('Loaded images:', businessImages);
     } catch (error) {
       console.error('Error loading images:', error);
       toast({
@@ -51,8 +48,6 @@ const CreativeStudio = () => {
   }, [currentBusiness, businessLoading]);
 
   const handleGenerateImage = async () => {
-    console.log('Generate image clicked', { prompt: prompt.trim(), currentBusiness });
-    
     if (!prompt.trim()) {
       toast({
         title: "Prompt Required",
@@ -72,12 +67,9 @@ const CreativeStudio = () => {
     }
 
     setIsGenerating(true);
-    console.log('Starting image generation...', { prompt, style, businessId: currentBusiness.id });
     
     try {
       const newImage = await generateImage(prompt, style, currentBusiness.id);
-      console.log('Image generated successfully:', newImage);
-      
       setImages([newImage, ...images]);
       setPrompt('');
       
@@ -118,27 +110,25 @@ const CreativeStudio = () => {
     }
   };
 
-  // Show loading state while business context is loading
   if (businessLoading) {
     return (
       <div className="space-y-8">
-        <Card className="modern-card">
-          <CardContent className="p-8 text-center">
+        <Card>
+          <CardContent className="p-12 text-center">
             <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Loading...</h3>
-            <p className="text-muted-foreground">Setting up your workspace...</p>
+            <h3 className="text-lg font-semibold mb-2">Setting Up Your Workspace...</h3>
+            <p className="text-muted-foreground">Please wait while we prepare everything for you.</p>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  // Show error state if there's a business context error
   if (businessError) {
     return (
       <div className="space-y-8">
-        <Card className="modern-card border-destructive">
-          <CardContent className="p-8 text-center">
+        <Card className="border-destructive">
+          <CardContent className="p-12 text-center">
             <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2 text-destructive">Error Loading Business Data</h3>
             <p className="text-muted-foreground mb-4">{businessError}</p>
@@ -151,14 +141,17 @@ const CreativeStudio = () => {
     );
   }
 
-  // Show no business state
   if (!currentBusiness) {
     return (
       <div className="space-y-8">
-        <Card className="modern-card">
-          <CardContent className="p-8 text-center">
-            <h3 className="text-lg font-semibold mb-2">No Business Selected</h3>
-            <p className="text-muted-foreground">Please select or create a business account to use the Creative Studio.</p>
+        <Card>
+          <CardContent className="p-12 text-center">
+            <Palette className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2">Welcome to Creative Studio</h3>
+            <p className="text-muted-foreground mb-6">Please select or create a business account to start generating amazing images with AI.</p>
+            <Button variant="outline">
+              Create Business Account
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -167,78 +160,73 @@ const CreativeStudio = () => {
 
   return (
     <div className="space-y-8">
-      {/* Header Section */}
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-accent/5 rounded-2xl -z-10" />
-        <div className="p-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="h-12 w-12 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center shadow-lg">
-              <Palette className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gradient">Creative Studio</h1>
-              <p className="text-muted-foreground">
-                Generate stunning visuals with AI-powered image creation
-              </p>
-            </div>
+      {/* Header */}
+      <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-8">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="h-16 w-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg">
+            <Palette className="h-8 w-8 text-white" />
           </div>
-          
-          <div className="flex gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                <Sparkles className="h-3 w-3 mr-1" />
-                AI Powered
-              </Badge>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20">
-                <Wand2 className="h-3 w-3 mr-1" />
-                High Quality
-              </Badge>
-            </div>
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Creative Studio
+            </h1>
+            <p className="text-lg text-gray-600 mt-1">
+              Generate stunning visuals with AI-powered image creation
+            </p>
           </div>
+        </div>
+        
+        <div className="flex gap-3">
+          <Badge variant="secondary" className="bg-purple-100 text-purple-700 border-purple-200">
+            <Sparkles className="h-3 w-3 mr-1" />
+            AI Powered
+          </Badge>
+          <Badge variant="secondary" className="bg-pink-100 text-pink-700 border-pink-200">
+            <Wand2 className="h-3 w-3 mr-1" />
+            High Quality
+          </Badge>
         </div>
       </div>
 
       {/* Image Generator */}
-      <Card className="modern-card hover-glow">
+      <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <div className="h-8 w-8 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
-              <Wand2 className="h-4 w-4 text-white" />
+          <CardTitle className="flex items-center gap-3">
+            <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center">
+              <Wand2 className="h-5 w-5 text-white" />
             </div>
             AI Image Generator
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-base">
             Describe your vision and watch our AI bring it to life with professional-quality images.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Image Description</label>
+          <div className="space-y-3">
+            <label className="text-sm font-semibold text-gray-700">What would you like to create?</label>
             <Textarea
-              placeholder="Describe the image you want to generate... (e.g., 'Modern business logo with blue and green colors', 'Professional team photo for website header', 'Abstract background for social media')"
+              placeholder="Describe your image in detail... (e.g., 'A modern minimalist logo for a tech startup with blue and silver colors', 'Professional headshot of a businesswoman in office setting', 'Abstract geometric background for website header')"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               rows={4}
-              className="resize-none focus:ring-2 focus:ring-primary/20"
+              className="resize-none text-base"
             />
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Art Style</label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <label className="text-sm font-semibold text-gray-700">Art Style</label>
               <Select value={style} onValueChange={setStyle}>
-                <SelectTrigger className="focus:ring-2 focus:ring-primary/20">
-                  <SelectValue placeholder="Select style" />
+                <SelectTrigger className="h-12">
+                  <SelectValue placeholder="Choose your style" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="realistic">🎯 Realistic</SelectItem>
-                  <SelectItem value="illustration">🎨 Illustration</SelectItem>
-                  <SelectItem value="abstract">🌟 Abstract</SelectItem>
-                  <SelectItem value="minimalist">⚪ Minimalist</SelectItem>
-                  <SelectItem value="vintage">📸 Vintage</SelectItem>
-                  <SelectItem value="modern">💎 Modern</SelectItem>
+                  <SelectItem value="realistic">🎯 Realistic Photography</SelectItem>
+                  <SelectItem value="illustration">🎨 Digital Illustration</SelectItem>
+                  <SelectItem value="abstract">🌟 Abstract Art</SelectItem>
+                  <SelectItem value="minimalist">⚪ Minimalist Design</SelectItem>
+                  <SelectItem value="vintage">📸 Vintage Style</SelectItem>
+                  <SelectItem value="modern">💎 Modern & Sleek</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -247,17 +235,17 @@ const CreativeStudio = () => {
               <Button 
                 onClick={handleGenerateImage} 
                 disabled={isGenerating || !prompt.trim()}
-                className="btn-gradient w-full hover-lift"
+                className="w-full h-12 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold"
                 size="lg"
               >
                 {isGenerating ? (
                   <>
-                    <div className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" />
-                    Generating...
+                    <div className="animate-spin h-5 w-5 mr-2 border-2 border-white border-t-transparent rounded-full" />
+                    Creating Magic...
                   </>
                 ) : (
                   <>
-                    <Plus className="mr-2 h-4 w-4" />
+                    <Plus className="mr-2 h-5 w-5" />
                     Generate Image
                   </>
                 )}
@@ -267,77 +255,79 @@ const CreativeStudio = () => {
         </CardContent>
       </Card>
 
-      {/* Generated Images Gallery */}
-      <Card className="modern-card">
+      {/* Gallery */}
+      <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <div className="h-8 w-8 bg-gradient-to-br from-accent to-primary rounded-lg flex items-center justify-center">
-              <Image className="h-4 w-4 text-white" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                <Image className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <CardTitle>Your Gallery</CardTitle>
+                <CardDescription>Browse and download your AI-generated masterpieces</CardDescription>
+              </div>
             </div>
-            Your Gallery
-            <Badge variant="secondary" className="ml-auto">
+            <Badge variant="outline" className="text-lg px-3 py-1">
               {images.length} images
             </Badge>
-          </CardTitle>
-          <CardDescription>
-            Browse, download, and manage your AI-generated masterpieces
-          </CardDescription>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-16">
-              <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-              <p className="text-muted-foreground">Loading your images...</p>
+            <div className="text-center py-20">
+              <div className="animate-spin h-10 w-10 border-2 border-purple-500 border-t-transparent rounded-full mx-auto mb-4" />
+              <p className="text-gray-600 text-lg">Loading your creations...</p>
             </div>
           ) : images.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="h-20 w-20 bg-gradient-to-br from-muted to-muted/50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Image className="h-10 w-10 text-muted-foreground" />
+            <div className="text-center py-20">
+              <div className="h-24 w-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                <Image className="h-12 w-12 text-gray-400" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">No images yet</h3>
-              <p className="text-muted-foreground mb-4">Create your first AI-generated image to get started</p>
+              <h3 className="text-xl font-semibold mb-3">Your Gallery Awaits</h3>
+              <p className="text-gray-600 text-lg mb-6 max-w-md mx-auto">
+                Create your first AI-generated image using the generator above. Let your creativity flow!
+              </p>
             </div>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {images.map((image) => (
-                <div key={image.id} className="group relative hover-lift">
-                  <div className="aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-muted to-muted/50 shadow-lg">
+                <div key={image.id} className="group">
+                  <div className="aspect-square rounded-2xl overflow-hidden bg-gray-100 shadow-lg mb-4 relative">
                     <img
                       src={image.image_url}
                       alt={image.prompt}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       onError={(e) => {
-                        console.error('Image failed to load:', image.image_url);
                         const target = e.target as HTMLImageElement;
                         target.src = `https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600&h=600&fit=crop`;
                       }}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </div>
                   
-                  <div className="mt-4 space-y-3">
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium line-clamp-2 group-hover:text-primary transition-colors">
+                  <div className="space-y-4">
+                    <div>
+                      <p className="font-medium text-gray-900 line-clamp-2 mb-2 group-hover:text-purple-600 transition-colors">
                         {image.prompt}
                       </p>
-                      <div className="flex items-center justify-between text-xs">
-                        <Badge variant="outline" className="capitalize">
+                      <div className="flex items-center justify-between text-sm">
+                        <Badge variant="outline" className="capitalize font-medium">
                           {image.style}
                         </Badge>
-                        <span className="text-muted-foreground">
+                        <span className="text-gray-500">
                           {new Date(image.created_at).toLocaleDateString()}
                         </span>
                       </div>
                     </div>
                     
                     <Button
-                      size="sm"
                       variant="outline"
-                      className="w-full hover:bg-primary hover:text-primary-foreground transition-all duration-200"
+                      className="w-full hover:bg-purple-50 hover:border-purple-200 hover:text-purple-700 transition-all duration-200"
                       onClick={() => handleDownload(image)}
                     >
-                      <Download className="mr-2 h-3 w-3" />
-                      Download
+                      <Download className="mr-2 h-4 w-4" />
+                      Download Image
                     </Button>
                   </div>
                 </div>
@@ -346,61 +336,6 @@ const CreativeStudio = () => {
           )}
         </CardContent>
       </Card>
-
-      {/* Creative Tips */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="modern-card">
-          <CardHeader>
-            <CardTitle className="text-lg">💡 Writing Better Prompts</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="space-y-2">
-              <div className="flex items-start gap-2">
-                <div className="h-2 w-2 bg-primary rounded-full mt-2 flex-shrink-0" />
-                <p className="text-sm text-muted-foreground">Be specific about colors, style, and mood</p>
-              </div>
-              <div className="flex items-start gap-2">
-                <div className="h-2 w-2 bg-accent rounded-full mt-2 flex-shrink-0" />
-                <p className="text-sm text-muted-foreground">Mention the intended use (logo, header, social media)</p>
-              </div>
-              <div className="flex items-start gap-2">
-                <div className="h-2 w-2 bg-primary rounded-full mt-2 flex-shrink-0" />
-                <p className="text-sm text-muted-foreground">Include composition details (close-up, wide shot)</p>
-              </div>
-              <div className="flex items-start gap-2">
-                <div className="h-2 w-2 bg-accent rounded-full mt-2 flex-shrink-0" />
-                <p className="text-sm text-muted-foreground">Specify any text or elements to include</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="modern-card">
-          <CardHeader>
-            <CardTitle className="text-lg">🚀 Best Practices</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="space-y-2">
-              <div className="flex items-start gap-2">
-                <div className="h-2 w-2 bg-success rounded-full mt-2 flex-shrink-0" />
-                <p className="text-sm text-muted-foreground">Generate multiple variations of important images</p>
-              </div>
-              <div className="flex items-start gap-2">
-                <div className="h-2 w-2 bg-warning rounded-full mt-2 flex-shrink-0" />
-                <p className="text-sm text-muted-foreground">Keep your brand colors and style consistent</p>
-              </div>
-              <div className="flex items-start gap-2">
-                <div className="h-2 w-2 bg-success rounded-full mt-2 flex-shrink-0" />
-                <p className="text-sm text-muted-foreground">Download and backup your favorite images</p>
-              </div>
-              <div className="flex items-start gap-2">
-                <div className="h-2 w-2 bg-warning rounded-full mt-2 flex-shrink-0" />
-                <p className="text-sm text-muted-foreground">Use high-quality images for professional materials</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 };
