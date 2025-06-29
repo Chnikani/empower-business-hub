@@ -172,10 +172,13 @@ export class DatabaseStorage {
   }
 
   async upsertTypingIndicator(indicator: InsertTypingIndicator) {
+    if (!indicator.groupId || !indicator.userId) {
+      throw new Error("groupId and userId are required for typing indicators");
+    }
     const existing = await db.select().from(typingIndicators).where(
       and(
-        eq(typingIndicators.groupId, indicator.groupId!),
-        eq(typingIndicators.userId, indicator.userId!)
+        eq(typingIndicators.groupId, indicator.groupId),
+        eq(typingIndicators.userId, indicator.userId)
       )
     ).limit(1);
 
