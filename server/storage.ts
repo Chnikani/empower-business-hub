@@ -19,7 +19,7 @@ import {
   insertChatMessageSchema,
   insertTypingIndicatorSchema,
   insertGeneratedImageSchema,
-} from "../../shared/schema";
+} from "../shared/schema";
 import { z } from "zod";
 
 type InsertUser = z.infer<typeof insertUserSchema>;

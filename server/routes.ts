@@ -10,7 +10,7 @@ import {
   insertGroupInvitationSchema,
   insertChatMessageSchema,
   insertTypingIndicatorSchema,
-} from "../../shared/schema";
+} from "../shared/schema";
 import { Express } from "express";
 
 export async function registerRoutes(app: Express) {
