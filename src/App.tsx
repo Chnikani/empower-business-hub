@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,6 +20,7 @@ import TeamChat from "./pages/TeamChat";
 import Marketing from "./pages/Marketing";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
+import InviteAccept from "./pages/InviteAccept";
 
 const queryClient = new QueryClient();
 
@@ -31,30 +31,38 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <AuthGuard>
-            <SidebarProvider>
-              <BrowserRouter>
-                <div className="min-h-screen flex w-full">
-                  <Routes>
-                    <Route path="/" element={<AppLayout />}>
-                      <Route index element={<Dashboard />} />
-                      <Route path="accounting" element={<Accounting />} />
-                      <Route path="knowledge" element={<KnowledgeBase />} />
-                      <Route path="crm" element={<CRM />} />
-                      <Route path="creative" element={<CreativeStudio />} />
-                      <Route path="website" element={<WebsiteBuilder />} />
-                      <Route path="signatures" element={<ESignatures />} />
-                      <Route path="retail" element={<Retail />} />
-                      <Route path="chat" element={<TeamChat />} />
-                      <Route path="marketing" element={<Marketing />} />
-                      <Route path="contact" element={<Contact />} />
-                    </Route>
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </div>
-              </BrowserRouter>
-            </SidebarProvider>
-          </AuthGuard>
+          <BrowserRouter>
+            <div className="min-h-screen flex w-full">
+              <Routes>
+                {/* Public route for invitations */}
+                <Route path="/invite/:code" element={<InviteAccept />} />
+                
+                {/* Protected routes */}
+                <Route path="/*" element={
+                  <AuthGuard>
+                    <SidebarProvider>
+                      <Routes>
+                        <Route path="/" element={<AppLayout />}>
+                          <Route index element={<Dashboard />} />
+                          <Route path="accounting" element={<Accounting />} />
+                          <Route path="knowledge" element={<KnowledgeBase />} />
+                          <Route path="crm" element={<CRM />} />
+                          <Route path="creative" element={<CreativeStudio />} />
+                          <Route path="website" element={<WebsiteBuilder />} />
+                          <Route path="signatures" element={<ESignatures />} />
+                          <Route path="retail" element={<Retail />} />
+                          <Route path="chat" element={<TeamChat />} />
+                          <Route path="marketing" element={<Marketing />} />
+                          <Route path="contact" element={<Contact />} />
+                        </Route>
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </SidebarProvider>
+                  </AuthGuard>
+                } />
+              </Routes>
+            </div>
+          </BrowserRouter>
         </TooltipProvider>
       </BusinessProvider>
     </AuthProvider>
