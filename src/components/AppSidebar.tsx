@@ -1,5 +1,5 @@
 
-import { Calendar, Database, FileText, Users, Palette, Monitor, FileCheck, ShoppingCart, MessageSquare, Megaphone, BarChart3 } from "lucide-react";
+import { Calendar, Database, FileText, Users, Palette, Monitor, FileCheck, ShoppingCart, MessageSquare, Megaphone, BarChart3, Mail } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -73,6 +73,12 @@ const menuItems = [
     url: "/marketing",
     icon: Megaphone,
     description: "Campaigns & Content"
+  },
+  {
+    title: "Contact",
+    url: "/contact",
+    icon: Mail,
+    description: "Get in touch with us"
   },
 ];
 

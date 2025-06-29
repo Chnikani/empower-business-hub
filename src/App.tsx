@@ -19,6 +19,7 @@ import ESignatures from "./pages/ESignatures";
 import Retail from "./pages/Retail";
 import TeamChat from "./pages/TeamChat";
 import Marketing from "./pages/Marketing";
+import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
                       <Route path="retail" element={<Retail />} />
                       <Route path="chat" element={<TeamChat />} />
                       <Route path="marketing" element={<Marketing />} />
+                      <Route path="contact" element={<Contact />} />
                     </Route>
                     <Route path="*" element={<NotFound />} />
                   </Routes>
