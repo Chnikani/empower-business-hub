@@ -10,18 +10,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Users, MessageSquare, Settings, Copy, ExternalLink } from 'lucide-react';
-import { ChatRoom } from '@/components/chat/ChatRoom';
+import { Plus, Users, MessageSquare, Send, ArrowLeft } from 'lucide-react';
+import { chatService, ChatGroup, ChatMessage } from '@/services/chatService';
+import { MessageList } from '@/components/chat/MessageList';
+import { TypingIndicator } from '@/components/chat/TypingIndicator';
 import { InvitationManager } from '@/components/chat/InvitationManager';
-
-interface ChatGroup {
-  id: string;
-  name: string;
-  description: string;
-  created_at: string;
-  member_count: number;
-  is_admin: boolean;
-}
 
 interface UserProfile {
   id: string;
@@ -32,20 +25,42 @@ const TeamChat = () => {
   const { user } = useAuth();
   const { currentBusiness } = useBusiness();
   const { toast } = useToast();
+  
+  // State for groups
   const [groups, setGroups] = useState<ChatGroup[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  
+  // State for chat
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [messagesLoading, setMessagesLoading] = useState(false);
+  
+  // State for creating groups
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const [newGroupDescription, setNewGroupDescription] = useState('');
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
+    if (user && currentBusiness) {
       fetchUserProfile();
       fetchChatGroups();
     }
   }, [user, currentBusiness]);
+
+  useEffect(() => {
+    if (selectedGroup) {
+      loadMessages();
+      
+      // Subscribe to real-time messages
+      const unsubscribe = chatService.subscribeToMessages(selectedGroup, (newMessage) => {
+        setMessages(prev => [...prev, newMessage]);
+      });
+
+      return unsubscribe;
+    }
+  }, [selectedGroup]);
 
   const fetchUserProfile = async () => {
     if (!user) return;
@@ -68,33 +83,9 @@ const TeamChat = () => {
     if (!user || !currentBusiness) return;
 
     try {
-      const { data, error } = await supabase
-        .from('chat_groups')
-        .select(`
-          id,
-          name,
-          description,
-          created_at,
-          group_members!inner(is_admin),
-          group_members(count)
-        `)
-        .eq('business_id', currentBusiness.id)
-        .eq('group_members.user_id', user.id);
-
-      if (error) throw error;
-
-      const formattedGroups = data?.map(group => ({
-        id: group.id,
-        name: group.name,
-        description: group.description,
-        created_at: group.created_at,
-        member_count: group.group_members.length,
-        is_admin: group.group_members[0]?.is_admin || false
-      })) || [];
-
-      setGroups(formattedGroups);
+      const groups = await chatService.getChatGroups(currentBusiness.id, user.id);
+      setGroups(groups);
     } catch (error) {
-      console.error('Error fetching chat groups:', error);
       toast({
         title: "Error",
         description: "Failed to fetch chat groups",
@@ -102,6 +93,24 @@ const TeamChat = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadMessages = async () => {
+    if (!selectedGroup) return;
+
+    setMessagesLoading(true);
+    try {
+      const messages = await chatService.getMessages(selectedGroup);
+      setMessages(messages);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load messages",
+        variant: "destructive"
+      });
+    } finally {
+      setMessagesLoading(false);
     }
   };
 
@@ -118,29 +127,12 @@ const TeamChat = () => {
     }
 
     try {
-      const { data: groupData, error: groupError } = await supabase
-        .from('chat_groups')
-        .insert({
-          name: newGroupName,
-          description: newGroupDescription,
-          business_id: currentBusiness.id,
-          created_by: user.id
-        })
-        .select()
-        .single();
-
-      if (groupError) throw groupError;
-
-      // Add creator as admin member
-      const { error: memberError } = await supabase
-        .from('group_members')
-        .insert({
-          group_id: groupData.id,
-          user_id: user.id,
-          is_admin: true
-        });
-
-      if (memberError) throw memberError;
+      await chatService.createChatGroup(
+        newGroupName,
+        newGroupDescription,
+        currentBusiness.id,
+        user.id
+      );
 
       toast({
         title: "Success",
@@ -152,7 +144,6 @@ const TeamChat = () => {
       setShowCreateGroup(false);
       fetchChatGroups();
     } catch (error) {
-      console.error('Error creating chat group:', error);
       toast({
         title: "Error",
         description: "Failed to create chat group",
@@ -161,14 +152,30 @@ const TeamChat = () => {
     }
   };
 
-  if (selectedGroup) {
-    return (
-      <ChatRoom 
-        groupId={selectedGroup} 
-        onBack={() => setSelectedGroup(null)}
-      />
-    );
-  }
+  const sendMessage = async () => {
+    if (!newMessage.trim() || !user || !selectedGroup) return;
+
+    try {
+      await chatService.sendMessage(selectedGroup, newMessage, user.id);
+      setNewMessage('');
+      
+      // Clear typing indicator
+      await chatService.clearTypingIndicator(selectedGroup, user.id);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send message",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleTyping = async () => {
+    if (!user || !selectedGroup) return;
+    await chatService.updateTypingIndicator(selectedGroup, user.id);
+  };
+
+  const selectedGroupInfo = groups.find(g => g.id === selectedGroup);
 
   if (loading) {
     return (
@@ -181,6 +188,81 @@ const TeamChat = () => {
     );
   }
 
+  // Chat view when a group is selected
+  if (selectedGroup && selectedGroupInfo) {
+    return (
+      <div className="h-[calc(100vh-12rem)] flex flex-col">
+        {/* Chat Header */}
+        <Card className="mb-4">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setSelectedGroup(null)}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="flex-1">
+                <CardTitle className="text-lg">{selectedGroupInfo.name}</CardTitle>
+                {selectedGroupInfo.description && (
+                  <p className="text-sm text-muted-foreground">
+                    {selectedGroupInfo.description}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary">
+                  <Users className="h-3 w-3 mr-1" />
+                  {selectedGroupInfo.member_count}
+                </Badge>
+                {selectedGroupInfo.is_admin && (
+                  <InvitationManager groupId={selectedGroup} />
+                )}
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
+
+        {/* Messages Area */}
+        <Card className="flex-1 flex flex-col min-h-0">
+          <CardContent className="flex-1 flex flex-col p-0 min-h-0">
+            {/* Messages List */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {messagesLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+                  <p className="mt-2 text-sm text-muted-foreground">Loading messages...</p>
+                </div>
+              ) : (
+                <>
+                  <MessageList messages={messages} currentUserId={user?.id} />
+                  <TypingIndicator groupId={selectedGroup} currentUserId={user?.id} />
+                </>
+              )}
+            </div>
+
+            {/* Message Input */}
+            <div className="border-t p-4">
+              <div className="flex gap-2">
+                <Input
+                  value={newMessage}
+                  onChange={(e) => {
+                    setNewMessage(e.target.value);
+                    handleTyping();
+                  }}
+                  onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                  placeholder="Type your message..."
+                  className="flex-1"
+                />
+                <Button onClick={sendMessage} disabled={!newMessage.trim()}>
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Groups list view
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
