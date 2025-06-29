@@ -21,7 +21,7 @@ const customerData = [
 
 const Dashboard = () => {
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4 rounded-lg">
       {/* Header Section */}
       <div className="relative">
         <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-accent/5 rounded-2xl -z-10" />

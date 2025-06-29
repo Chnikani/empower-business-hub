@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -259,7 +259,7 @@ const InviteAccept = () => {
                     <Button 
                       variant="outline" 
                       className="flex-1"
-                      onClick={() => navigate('/auth')}
+                      onClick={() => navigate('/login')}
                     >
                       Sign In
                     </Button>

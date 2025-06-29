@@ -61,7 +61,14 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+			             vibrant: {
+			                 'blue': '#3b82f6',
+			                 'purple': '#8b5cf6',
+			                 'pink': '#ec4899',
+			                 'green': '#22c55e',
+			                 'orange': '#f97316',
+			               },
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

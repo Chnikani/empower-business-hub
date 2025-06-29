@@ -21,6 +21,8 @@ import Marketing from "./pages/Marketing";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import InviteAccept from "./pages/InviteAccept";
+import Landing from "./pages/Landing";
+import Login from "./pages/Login";
 
 const queryClient = new QueryClient();
 
@@ -32,34 +34,36 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <div className="min-h-screen flex w-full">
+            <div className="min-h-screen w-full">
               <Routes>
-                {/* Public route for invitations */}
+                {/* Public routes */}
+                <Route path="/" element={<Landing />} />
+                <Route path="/login" element={<Login />} />
                 <Route path="/invite/:code" element={<InviteAccept />} />
                 
                 {/* Protected routes */}
-                <Route path="/*" element={
-                  <AuthGuard>
-                    <SidebarProvider>
-                      <Routes>
-                        <Route path="/" element={<AppLayout />}>
-                          <Route index element={<Dashboard />} />
-                          <Route path="accounting" element={<Accounting />} />
-                          <Route path="knowledge" element={<KnowledgeBase />} />
-                          <Route path="crm" element={<CRM />} />
-                          <Route path="creative" element={<CreativeStudio />} />
-                          <Route path="website" element={<WebsiteBuilder />} />
-                          <Route path="signatures" element={<ESignatures />} />
-                          <Route path="retail" element={<Retail />} />
-                          <Route path="chat" element={<TeamChat />} />
-                          <Route path="marketing" element={<Marketing />} />
-                          <Route path="contact" element={<Contact />} />
-                        </Route>
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </SidebarProvider>
-                  </AuthGuard>
-                } />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <AuthGuard>
+                      <SidebarProvider>
+                        <AppLayout />
+                      </SidebarProvider>
+                    </AuthGuard>
+                  }
+                >
+                  <Route index element={<Dashboard />} />
+                  <Route path="accounting" element={<Accounting />} />
+                  <Route path="knowledge" element={<KnowledgeBase />} />
+                  <Route path="crm" element={<CRM />} />
+                  <Route path="creative" element={<CreativeStudio />} />
+                  <Route path="website" element={<WebsiteBuilder />} />
+                  <Route path="signatures" element={<ESignatures />} />
+                  <Route path="retail" element={<Retail />} />
+                  <Route path="chat" element={<TeamChat />} />
+                  <Route path="marketing" element={<Marketing />} />
+                  <Route path="contact" element={<Contact />} />
+                </Route>
               </Routes>
             </div>
           </BrowserRouter>

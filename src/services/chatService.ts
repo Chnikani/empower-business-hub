@@ -1,5 +1,5 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 
 export interface ChatGroup {
   id: string;
@@ -50,7 +50,7 @@ export const chatService = {
         name: group.name,
         description: group.description,
         created_at: group.created_at,
-        member_count: group.group_members.length,
+        member_count: group.group_members[0]?.count || 0,
         is_admin: group.group_members[0]?.is_admin || false
       })) || [];
     } catch (error) {
@@ -81,7 +81,21 @@ export const chatService = {
         .limit(100);
 
       if (error) throw error;
-      return data || [];
+      
+      // Transform the data to match the ChatMessage interface
+      return (data || []).map(message => ({
+        id: message.id,
+        content: message.content,
+        message_type: message.message_type,
+        file_url: message.file_url,
+        file_name: message.file_name,
+        created_at: message.created_at,
+        user_id: message.user_id,
+        profiles: {
+          full_name: message.profiles[0]?.full_name || '',
+          avatar_url: message.profiles[0]?.avatar_url
+        }
+      }));
     } catch (error) {
       console.error('Error fetching messages:', error);
       throw error;
@@ -177,7 +191,21 @@ export const chatService = {
             .single();
 
           if (data) {
-            callback(data);
+            // Transform the data to match the ChatMessage interface
+            const transformedMessage: ChatMessage = {
+              id: data.id,
+              content: data.content,
+              message_type: data.message_type,
+              file_url: data.file_url,
+              file_name: data.file_name,
+              created_at: data.created_at,
+              user_id: data.user_id,
+              profiles: {
+                full_name: data.profiles[0]?.full_name || '',
+                avatar_url: data.profiles[0]?.avatar_url
+              }
+            };
+            callback(transformedMessage);
           }
         }
       )
@@ -193,15 +221,18 @@ export const chatService = {
    */
   async updateTypingIndicator(groupId: string, userId: string): Promise<void> {
     try {
-      await supabase
+      const { error } = await supabase
         .from('typing_indicators')
         .upsert({
           group_id: groupId,
           user_id: userId,
           last_typing: new Date().toISOString()
         });
+      
+      if (error) throw error;
     } catch (error) {
       console.error('Error updating typing indicator:', error);
+      throw error;
     }
   },
 
@@ -210,13 +241,16 @@ export const chatService = {
    */
   async clearTypingIndicator(groupId: string, userId: string): Promise<void> {
     try {
-      await supabase
+      const { error } = await supabase
         .from('typing_indicators')
         .delete()
         .eq('group_id', groupId)
         .eq('user_id', userId);
+      
+      if (error) throw error;
     } catch (error) {
       console.error('Error clearing typing indicator:', error);
+      throw error;
     }
   }
 };

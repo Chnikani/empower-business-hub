@@ -8,9 +8,9 @@ import { BusinessSelector } from "./BusinessSelector";
 
 const AppLayout = () => {
   return (
-    <>
+    <div className="flex w-full">
       <AppSidebar />
-      <main className="flex-1 flex flex-col min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
+      <main className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-blue-900 w-full">
         <header className="sticky top-0 flex h-16 shrink-0 items-center gap-4 border-b border-border/50 bg-card/80 backdrop-blur-md px-6 z-10 shadow-sm">
           <SidebarTrigger className="-ml-1 hover:bg-accent/10" />
           <div className="flex items-center gap-3">
@@ -41,13 +41,13 @@ const AppLayout = () => {
             </div>
           </div>
         </header>
-        <div className="flex-1 overflow-auto p-6 custom-scrollbar">
+        <div className="flex-1 overflow-auto p-4 sm:p-6 custom-scrollbar">
           <div className="max-w-7xl mx-auto">
             <Outlet />
           </div>
         </div>
       </main>
-    </>
+    </div>
   );
 };
 

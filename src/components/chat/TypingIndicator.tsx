@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface TypingUser {
@@ -8,7 +8,7 @@ interface TypingUser {
   profiles: {
     full_name: string;
     avatar_url?: string;
-  };
+  } | null;
 }
 
 interface TypingIndicatorProps {
@@ -71,15 +71,15 @@ export const TypingIndicator = ({ groupId, currentUserId }: TypingIndicatorProps
     <div className="flex items-center gap-2 text-muted-foreground">
       <div className="flex -space-x-1">
         {typingUsers.slice(0, 3).map((user) => {
-          const initials = user.profiles.full_name
-            .split(' ')
+          const initials = user.profiles?.full_name
+            ?.split(' ')
             .map(n => n[0])
             .join('')
-            .toUpperCase();
+            .toUpperCase() || '';
           
           return (
             <Avatar key={user.user_id} className="h-6 w-6 border-2 border-background">
-              <AvatarImage src={user.profiles.avatar_url} />
+              <AvatarImage src={user.profiles?.avatar_url} />
               <AvatarFallback className="text-xs">{initials}</AvatarFallback>
             </Avatar>
           );
@@ -89,12 +89,12 @@ export const TypingIndicator = ({ groupId, currentUserId }: TypingIndicatorProps
       <div className="flex items-center gap-1">
         {typingUsers.length === 1 && (
           <span className="text-sm">
-            {typingUsers[0].profiles.full_name} is typing
+            {typingUsers[0].profiles?.full_name} is typing
           </span>
         )}
         {typingUsers.length === 2 && (
           <span className="text-sm">
-            {typingUsers[0].profiles.full_name} and {typingUsers[1].profiles.full_name} are typing
+            {typingUsers[0].profiles?.full_name} and {typingUsers[1].profiles?.full_name} are typing
           </span>
         )}
         {typingUsers.length > 2 && (
