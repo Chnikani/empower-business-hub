@@ -1,4 +1,3 @@
-import { createServer } from "http";
 import { z } from "zod";
 import { nanoid } from "nanoid";
 import { storage } from "./storage";
@@ -11,16 +10,10 @@ import {
   insertChatMessageSchema,
   insertTypingIndicatorSchema,
 } from "../shared/schema";
-import { Express } from "express";
+import { Express, Request, Response } from "express";
 
 export async function registerRoutes(app: Express) {
-  const httpServer = createServer(app);
-
-  const broadcast = (groupId: string, message: any) => {
-    console.log(`Broadcasting to group ${groupId}:`, message);
-  };
-
-  app.get("/api/profiles/:id", async (req, res) => {
+  app.get("/api/profiles/:id", async (req: Request, res: Response) => {
     try {
       const profile = await storage.getProfile(req.params.id);
       if (!profile) {
@@ -181,10 +174,6 @@ export async function registerRoutes(app: Express) {
     try {
       const messageData = insertChatMessageSchema.parse(req.body);
       const message = await storage.createChatMessage(messageData);
-      broadcast(message.groupId!, {
-        type: "new_message",
-        message,
-      });
       res.status(201).json(message);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -199,10 +188,6 @@ export async function registerRoutes(app: Express) {
     try {
       const indicatorData = insertTypingIndicatorSchema.parse(req.body);
       const indicator = await storage.upsertTypingIndicator(indicatorData);
-      broadcast(indicator.groupId!, {
-        type: "typing_start",
-        userId: indicator.userId,
-      });
       res.json(indicator);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -216,10 +201,6 @@ export async function registerRoutes(app: Express) {
   app.delete("/api/typing-indicators/:groupId/:userId", async (req, res) => {
     try {
       await storage.clearTypingIndicator(req.params.groupId, req.params.userId);
-      broadcast(req.params.groupId, {
-        type: "typing_stop",
-        userId: req.params.userId,
-      });
       res.status(204).send();
     } catch (error) {
       console.error("Error clearing typing indicator:", error);
@@ -303,5 +284,4 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  return httpServer;
 }
