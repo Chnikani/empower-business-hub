@@ -1,10 +1,6 @@
-import express from "express";
-import { registerRoutes } from "./routes";
+import { Api } from "./api";
+import { storage } from "./storage";
 
-const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+const api = new Api(storage);
 
-registerRoutes(app);
-
-export default app;
+export default api.app;

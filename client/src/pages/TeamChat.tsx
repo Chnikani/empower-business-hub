@@ -189,74 +189,15 @@ const TeamChat = () => {
   // Chat view when a group is selected
   if (selectedGroup && selectedGroupInfo) {
     return (
-      <div className="h-[calc(100vh-12rem)] flex flex-col">
-        {/* Chat Header */}
-        <Card className="mb-4">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => setSelectedGroup(null)}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div className="flex-1">
-                <CardTitle className="text-lg">{selectedGroupInfo.name}</CardTitle>
-                {selectedGroupInfo.description && (
-                  <p className="text-sm text-muted-foreground">
-                    {selectedGroupInfo.description}
-                  </p>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary">
-                  <Users className="h-3 w-3 mr-1" />
-                  {selectedGroupInfo.member_count}
-                </Badge>
-                {selectedGroupInfo.is_admin && (
-                  <InvitationManager groupId={selectedGroup} />
-                )}
-              </div>
-            </div>
-          </CardHeader>
-        </Card>
-
-        {/* Messages Area */}
-        <Card className="flex-1 flex flex-col min-h-0">
-          <CardContent className="flex-1 flex flex-col p-0 min-h-0">
-            {/* Messages List */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messagesLoading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
-                  <p className="mt-2 text-sm text-muted-foreground">Loading messages...</p>
-                </div>
-              ) : (
-                <>
-                  <MessageList messages={messages} currentUserId={user?.id} />
-                  <TypingIndicator groupId={selectedGroup} currentUserId={user?.id} />
-                </>
-              )}
-            </div>
-
-            {/* Message Input */}
-            <div className="border-t p-4">
-              <div className="flex gap-2">
-                <Input
-                  value={newMessage}
-                  onChange={(e) => {
-                    setNewMessage(e.target.value);
-                    handleTyping();
-                  }}
-                  onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                  placeholder="Type your message..."
-                  className="flex-1"
-                />
-                <Button onClick={sendMessage} disabled={!newMessage.trim()}>
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <ChatRoom
+        groupId={selectedGroup}
+        currentUserId={user!.id}
+        onBack={() => setSelectedGroup(null)}
+        groupName={selectedGroupInfo.name}
+        groupDescription={selectedGroupInfo.description}
+        memberCount={selectedGroupInfo.member_count}
+        isAdmin={selectedGroupInfo.is_admin}
+      />
     );
   }
 

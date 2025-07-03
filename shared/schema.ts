@@ -223,3 +223,23 @@ export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true
 });
+
+// Type Exports
+export type BusinessAccount = typeof businessAccounts.$inferSelect;
+export type InsertBusinessAccount = typeof businessAccounts.$inferInsert;
+export type Profile = typeof profiles.$inferSelect;
+export type InsertProfile = typeof profiles.$inferInsert;
+export type ChatGroup = typeof chatGroups.$inferSelect;
+export type InsertChatGroup = typeof chatGroups.$inferInsert;
+export type GroupMember = typeof groupMembers.$inferSelect;
+export type InsertGroupMember = typeof groupMembers.$inferInsert;
+export type GroupInvitation = typeof groupInvitations.$inferSelect;
+export type InsertGroupInvitation = typeof groupInvitations.$inferInsert;
+export type ChatMessage = typeof chatMessages.$inferSelect;
+export type InsertChatMessage = typeof chatMessages.$inferInsert;
+export type TypingIndicator = typeof typingIndicators.$inferSelect;
+export type InsertTypingIndicator = typeof typingIndicators.$inferInsert;
+export type GeneratedImage = typeof generatedImages.$inferSelect;
+export type InsertGeneratedImage = typeof generatedImages.$inferInsert;
+export type User = typeof users.$inferSelect;
+export type InsertUser = typeof users.$inferInsert;

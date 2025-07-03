@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { BusinessProvider } from "@/contexts/BusinessContext";
+import { BusinessDataProvider } from "@/contexts/BusinessDataContext";
 import { AuthGuard } from "@/components/AuthGuard";
 import AppLayout from "./components/AppLayout";
 import Dashboard from "./pages/Dashboard";
@@ -23,6 +24,7 @@ import NotFound from "./pages/NotFound";
 import InviteAccept from "./pages/InviteAccept";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
+import SignUp from "./pages/SignUp";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +32,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <BusinessProvider>
+        <BusinessDataProvider>
         <TooltipProvider>
           <Toaster />
           <Sonner />
@@ -39,6 +42,7 @@ const App = () => (
                 {/* Public routes */}
                 <Route path="/" element={<Landing />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<SignUp />} />
                 <Route path="/invite/:code" element={<InviteAccept />} />
                 
                 {/* Protected routes */}
@@ -68,6 +72,7 @@ const App = () => (
             </div>
           </BrowserRouter>
         </TooltipProvider>
+        </BusinessDataProvider>
       </BusinessProvider>
     </AuthProvider>
   </QueryClientProvider>

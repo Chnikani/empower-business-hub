@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useBusinessData, Document as BusinessDocument } from "@/contexts/BusinessDataContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,42 +9,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Plus, Search, FileText, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-interface Document {
-  id: string;
-  title: string;
-  content: string;
-  createdAt: string;
-  updatedAt: string;
-  tags: string[];
-}
+// Use the Document type from BusinessDataContext
+type Document = BusinessDocument;
 
 const KnowledgeBase = () => {
-  const [documents, setDocuments] = useState<Document[]>([
-    {
-      id: '1',
-      title: 'Company Onboarding Process',
-      content: 'This document outlines the complete onboarding process for new employees...',
-      createdAt: '2024-01-15',
-      updatedAt: '2024-01-15',
-      tags: ['HR', 'Process']
-    },
-    {
-      id: '2',
-      title: 'Marketing Strategy 2024',
-      content: 'Our comprehensive marketing strategy for the upcoming year includes...',
-      createdAt: '2024-01-14',
-      updatedAt: '2024-01-16',
-      tags: ['Marketing', 'Strategy']
-    },
-    {
-      id: '3',
-      title: 'Product Launch Checklist',
-      content: 'Essential steps to follow when launching a new product or feature...',
-      createdAt: '2024-01-13',
-      updatedAt: '2024-01-13',
-      tags: ['Product', 'Checklist']
-    },
-  ]);
+  const { documents, setDocuments } = useBusinessData();
 
   const [newDocument, setNewDocument] = useState({
     title: '',
@@ -229,13 +199,21 @@ const KnowledgeBase = () => {
       </Dialog>
 
       {filteredDocuments.length === 0 && (
-        <Card>
+        <Card className="p-8 text-center">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No documents found</h3>
-            <p className="text-muted-foreground text-center">
-              {searchTerm ? 'Try adjusting your search terms' : 'Create your first document to get started'}
+            <div className="rounded-full bg-primary/10 p-6 mb-4">
+              <FileText className="h-8 w-8 text-primary" />
+            </div>
+            <h3 className="text-2xl font-bold mb-2">No Documents Yet</h3>
+            <p className="text-muted-foreground text-center max-w-md mx-auto mb-6">
+              {searchTerm ? 'Try adjusting your search terms' : 'Start building your knowledge base by creating your first document.'}
             </p>
+            {!searchTerm && (
+              <Button onClick={() => setIsDialogOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Create First Document
+              </Button>
+            )}
           </CardContent>
         </Card>
       )}

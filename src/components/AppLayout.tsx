@@ -10,7 +10,7 @@ const AppLayout = () => {
   return (
     <div className="flex w-full">
       <AppSidebar />
-      <main className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-blue-900 w-full">
+      <main className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-blue-900 w-full text-white [&_.text-muted-foreground]:text-gray-300">
         <header className="sticky top-0 flex h-16 shrink-0 items-center gap-4 border-b border-border/50 bg-card/80 backdrop-blur-md px-6 z-10 shadow-sm">
           <SidebarTrigger className="-ml-1 hover:bg-accent/10" />
           <div className="flex items-center gap-3">

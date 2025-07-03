@@ -22,9 +22,22 @@ interface ChatMessage {
 interface ChatRoomProps {
   groupId: string;
   currentUserId: string;
+  onBack: () => void;
+  groupName: string;
+  groupDescription: string;
+  memberCount: number;
+  isAdmin: boolean;
 }
 
-export function ChatRoom({ groupId, currentUserId }: ChatRoomProps) {
+export function ChatRoom({
+  groupId,
+  currentUserId,
+  onBack,
+  groupName,
+  groupDescription,
+  memberCount,
+  isAdmin,
+}: ChatRoomProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -129,12 +142,28 @@ export function ChatRoom({ groupId, currentUserId }: ChatRoomProps) {
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="flex-shrink-0 border-b">
-        <CardTitle className="flex items-center justify-between">
-          <span>Chat Room</span>
-          <Button variant="ghost" size="sm">
-            <MoreVertical className="w-4 h-4" />
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={onBack}>
+            <ArrowLeft className="h-4 w-4" />
           </Button>
-        </CardTitle>
+          <div className="flex-1">
+            <CardTitle className="text-lg">{groupName}</CardTitle>
+            {groupDescription && (
+              <p className="text-sm text-muted-foreground">
+                {groupDescription}
+              </p>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary">
+              <Users className="h-3 w-3 mr-1" />
+              {memberCount}
+            </Badge>
+            {isAdmin && (
+              <InvitationManager groupId={groupId} />
+            )}
+          </div>
+        </div>
       </CardHeader>
       
       <CardContent className="flex-1 flex flex-col p-0">
